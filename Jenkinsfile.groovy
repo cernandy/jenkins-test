@@ -25,6 +25,20 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/cernandy/jenkins-test.git']]])       
             }
         }
+
+     // Stopping Docker containers for cleaner Docker run
+        stage('docker stop containers') {
+            steps {
+                sh 'docker ps -f name=first-app -q | xargs --no-run-if-empty docker container stop'
+                sh 'docker container ls -a -fname=first-app -q | xargs -r docker container rm'
+
+                sh 'docker ps -f name=second-app -q | xargs --no-run-if-empty docker container stop'
+                sh 'docker container ls -a -fname=second-app -q | xargs -r docker container rm'
+
+                sh 'docker ps -f name=third-app -q | xargs --no-run-if-empty docker container stop'
+                sh 'docker container ls -a -fname=third-app -q | xargs -r docker container rm'
+            }
+        }
     
     // Building Docker images
         stage('Building App #1') {
@@ -76,20 +90,6 @@ pipeline {
                         dockerImage.run("-p 8098:5000 --rm --name third-app")
                     }
                 }  
-            }
-        }
-    
-     // Stopping Docker containers for cleaner Docker run
-        stage('docker stop containers') {
-            steps {
-                sh 'docker ps -f name=first-app -q | xargs --no-run-if-empty docker container stop'
-                sh 'docker container ls -a -fname=first-app -q | xargs -r docker container rm'
-
-                sh 'docker ps -f name=second-app -q | xargs --no-run-if-empty docker container stop'
-                sh 'docker container ls -a -fname=second-app -q | xargs -r docker container rm'
-
-                sh 'docker ps -f name=third-app -q | xargs --no-run-if-empty docker container stop'
-                sh 'docker container ls -a -fname=third-app -q | xargs -r docker container rm'
             }
         }
     }
