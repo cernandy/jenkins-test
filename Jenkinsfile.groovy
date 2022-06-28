@@ -47,7 +47,8 @@ pipeline {
             steps{
                 dir('app_1/'){
                     script {
-                        dockerImage = docker.build first_app
+                        def dockerImage = docker.build(first_app, "-f Dockerfile_1 .")
+
                         docker.withRegistry( '', registryCredential ) {
                             dockerImage.push()
                         }
